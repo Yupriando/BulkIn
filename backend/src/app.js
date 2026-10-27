@@ -1,9 +1,10 @@
 import express from 'express';
 import { z } from 'zod';
-import { clientForToken } from './supabase.js';
+import { clientForToken, anonClient } from './supabase.js';
+import { openapiSpec, swaggerHtml } from './openapi.js';
 import { computeNutrition, sumNutrition, linearSlope } from './nutrition.js';
 import { today, addDays, daysBetween, localDate, dayStart, dayEnd } from './dates.js';
-import { estimateFood, isAiConfigured, AiEstimateError } from './aiNutrition.js';
+import { estimateFood, isAiConfigured, AiEstimateError, AI_MODEL } from './aiNutrition.js';
 import { estimateEnergy } from './energy.js';
 
 export const MEAL_TYPES = ['sarapan', 'siang', 'sore', 'malam', 'camilan'];
@@ -54,7 +55,55 @@ async function requireAuth(req, _res, next) {
 export const app = express();
 app.use(express.json());
 
-app.get('/api/health', (_req, res) => res.json({ ok: true, app: 'NaikIn' }));
+// ───────────────────────── Sistem (tanpa login) ─────────────────────────
+
+const REQUIRED_ENV = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'];
+
+async function checkDatabase() {
+  const started = Date.now();
+  try {
+    const r = await fetch(`${process.env.SUPABASE_URL}/auth/v1/health`, {
+      headers: { apikey: process.env.SUPABASE_ANON_KEY },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!r.ok) return { ok: false, error: `Supabase membalas HTTP ${r.status}` };
+    return { ok: true, latency_ms: Date.now() - started };
+  } catch (err) {
+    return { ok: false, error: err.name === 'TimeoutError' ? 'Supabase tidak merespons (timeout 5 detik)' : err.message };
+  }
+}
+
+async function health(_req, res) {
+  const missing = REQUIRED_ENV.filter((name) => !process.env[name]);
+  const database = missing.length ? { ok: false, error: 'Env Supabase belum lengkap' } : await checkDatabase();
+  const ok = missing.length === 0 && database.ok;
+  res.status(ok ? 200 : 503).json({
+    ok,
+    app: 'NaikIn',
+    version: '1.0.0',
+    time: new Date().toISOString(),
+    checks: {
+      env: { ok: missing.length === 0, missing },
+      database,
+      ai: { configured: isAiConfigured(), model: AI_MODEL },
+    },
+  });
+}
+
+app.get('/health', health);
+app.get('/api/health', health);
+
+app.get('/', (_req, res) => res.redirect('/docs'));
+app.get(['/docs', '/api/docs'], (_req, res) => res.type('html').send(swaggerHtml));
+app.get('/api/openapi.json', (_req, res) => res.json(openapiSpec));
+
+/** Login untuk mencoba API lewat Swagger. Aplikasi HP login langsung ke Supabase. */
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = z.object({ email: z.string().email('Email tidak valid'), password: z.string().min(1) }).parse(req.body);
+  const { data, error } = await anonClient().auth.signInWithPassword({ email, password });
+  if (error) throw new HttpError(401, 'Email atau password salah');
+  res.json({ access_token: data.session.access_token, expires_at: data.session.expires_at });
+});
 
 const api = express.Router();
 api.use(requireAuth);

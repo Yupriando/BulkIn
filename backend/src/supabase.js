@@ -16,6 +16,11 @@ export function clientForToken(accessToken) {
   });
 }
 
+/** Client tanpa login — dipakai untuk proses login itu sendiri. */
+export function anonClient() {
+  return createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_ANON_KEY'), clientOptions);
+}
+
 /** Client admin (service role) — hanya untuk script lokal seperti seed & import, jangan dipakai di route API. */
 export function adminClient() {
   return createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_SERVICE_ROLE_KEY'), clientOptions);

@@ -100,7 +100,10 @@ Hari yang sudah punya data akan dilewati, jadi aman dijalankan berulang.
 
 ## API
 
-Semua endpoint (kecuali `/api/health`) butuh header `Authorization: Bearer <access token Supabase>`.
+Dokumentasi interaktif (Swagger): buka `/docs`. Login lewat `POST /api/auth/login` di sana, token otomatis terpasang.
+Cek kesehatan server: `/health` (koneksi Supabase + status AI).
+
+Semua endpoint (kecuali `/health`, `/docs`, `/api/auth/login`) butuh header `Authorization: Bearer <access token Supabase>`.
 
 | Method | Path | Keterangan |
 |---|---|---|

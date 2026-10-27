@@ -2,7 +2,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-5-5';
+export const AI_MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-5-5';
 
 const nullableNumber = { anyOf: [{ type: 'number' }, { type: 'null' }] };
 const nullableString = { anyOf: [{ type: 'string' }, { type: 'null' }] };
@@ -49,7 +49,9 @@ Berikan perkiraan terbaikmu walau tidak pasti; user akan menimbang makanannya da
 let client;
 
 export function isAiConfigured() {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
+  // Abaikan nilai contoh dari .env.example ("sk-ant-...")
+  const key = process.env.ANTHROPIC_API_KEY ?? '';
+  return key.startsWith('sk-ant-') && !key.endsWith('...') && key.length > 30;
 }
 
 export class AiEstimateError extends Error {}
@@ -63,7 +65,7 @@ export async function estimateFood(foodName) {
   let response;
   try {
     response = await client.beta.messages.create({
-      model: MODEL,
+      model: AI_MODEL,
       max_tokens: 4000,
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
