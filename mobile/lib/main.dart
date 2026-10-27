@@ -7,35 +7,45 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'screens/home_shell.dart';
 import 'screens/login_screen.dart';
+import 'screens/splash_screen.dart';
+import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await ThemeController.load(); // cepat; supaya splash langsung tampil di mode yang benar
+  runApp(const NaikInApp());
+}
+
+bool _supabaseReady = false;
+
+/// Dijalankan oleh SplashScreen sambil animasi berjalan. Aman dipanggil ulang (tombol "Coba lagi").
+Future<void> _initApp() async {
   await initializeDateFormatting('id_ID');
   Intl.defaultLocale = 'id_ID';
-  if (AppConfig.isComplete) {
+  if (AppConfig.isComplete && !_supabaseReady) {
     await Supabase.initialize(url: AppConfig.supabaseUrl, publishableKey: AppConfig.supabaseAnonKey);
+    _supabaseReady = true;
   }
-  runApp(const NaikInApp());
 }
 
 class NaikInApp extends StatelessWidget {
   const NaikInApp({super.key});
 
-  static const seed = Color(0xFF2E7D32);
-
-  ThemeData _theme(Brightness brightness) => ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: seed, brightness: brightness),
-        useMaterial3: true,
-        inputDecorationTheme: const InputDecorationTheme(border: OutlineInputBorder()),
-      );
-
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.mode,
+      builder: (context, mode, _) => _app(mode),
+    );
+  }
+
+  Widget _app(ThemeMode mode) {
     return MaterialApp(
       title: 'NaikIn',
       debugShowCheckedModeBanner: false,
-      theme: _theme(Brightness.light),
-      darkTheme: _theme(Brightness.dark),
+      theme: buildTheme(Brightness.light),
+      darkTheme: buildTheme(Brightness.dark),
+      themeMode: mode,
       locale: const Locale('id', 'ID'),
       supportedLocales: const [Locale('id', 'ID')],
       localizationsDelegates: const [
@@ -43,7 +53,10 @@ class NaikInApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: AppConfig.isComplete ? const AuthGate() : const _MissingConfig(),
+      home: SplashScreen(
+        init: _initApp,
+        next: () => AppConfig.isComplete ? const AuthGate() : const _MissingConfig(),
+      ),
     );
   }
 }

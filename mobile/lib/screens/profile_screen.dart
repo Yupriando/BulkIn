@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../api.dart';
 import '../format.dart';
 import '../models.dart';
+import '../theme.dart';
 import '../widgets/error_view.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -97,6 +98,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 20),
               FilledButton(onPressed: _saving ? null : _save, child: const Text('Simpan')),
+              const SizedBox(height: 32),
+              Text('Tampilan', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              ValueListenableBuilder<ThemeMode>(
+                valueListenable: ThemeController.mode,
+                builder: (context, mode, _) => SegmentedButton<ThemeMode>(
+                  segments: const [
+                    ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto), label: Text('Sistem')),
+                    ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode), label: Text('Terang')),
+                    ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode), label: Text('Gelap')),
+                  ],
+                  selected: {mode},
+                  onSelectionChanged: (s) => ThemeController.set(s.first),
+                ),
+              ),
               const SizedBox(height: 32),
               OutlinedButton.icon(
                 onPressed: () => Supabase.instance.client.auth.signOut(),

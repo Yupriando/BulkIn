@@ -131,6 +131,34 @@ export const openapiSpec = {
         responses: { 200: ok('Semua sehat', ref('Health')), 503: ok('Ada yang bermasalah', ref('Health')) },
       },
     },
+    '/api/auth/register': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Buat akun baru',
+        description: 'Kalau konfirmasi email dimatikan di Supabase, token langsung dipasang ke tombol Authorize.',
+        requestBody: json({
+          type: 'object',
+          required: ['display_name', 'email', 'password'],
+          properties: {
+            display_name: { type: 'string', example: 'Yupri' },
+            email: { type: 'string', format: 'email' },
+            password: { type: 'string', format: 'password', minLength: 8 },
+          },
+        }),
+        responses: {
+          201: ok('Akun dibuat', {
+            type: 'object',
+            properties: {
+              user_id: { type: 'string' },
+              email_confirmation_required: { type: 'boolean' },
+              access_token: { type: 'string', nullable: true },
+            },
+          }),
+          400: ok('Input tidak valid', ref('Error')),
+          409: ok('Email sudah terdaftar', ref('Error')),
+        },
+      },
+    },
     '/api/auth/login': {
       post: {
         tags: ['Auth'],
@@ -323,7 +351,7 @@ export const swaggerHtml = `<!doctype html>
       persistAuthorization: true,
       tryItOutEnabled: true,
       responseInterceptor: (res) => {
-        if (res.url.endsWith('/api/auth/login') && res.ok && res.body && res.body.access_token) {
+        if (/\/api\/auth\/(login|register)$/.test(res.url) && res.ok && res.body && res.body.access_token) {
           ui.preauthorizeApiKey('bearerAuth', res.body.access_token);
         }
         return res;

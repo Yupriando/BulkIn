@@ -97,6 +97,31 @@ app.get('/', (_req, res) => res.redirect('/docs'));
 app.get(['/docs', '/api/docs'], (_req, res) => res.type('html').send(swaggerHtml));
 app.get('/api/openapi.json', (_req, res) => res.json(openapiSpec));
 
+/** Daftar akun baru (untuk Swagger). Aplikasi HP mendaftar langsung ke Supabase. */
+app.post('/api/auth/register', async (req, res) => {
+  const body = z
+    .object({
+      display_name: z.string().trim().min(1, 'Isi nama panggilan').max(60),
+      email: z.string().email('Email tidak valid'),
+      password: z.string().min(8, 'Password minimal 8 karakter'),
+    })
+    .parse(req.body);
+  const { data, error } = await anonClient().auth.signUp({
+    email: body.email,
+    password: body.password,
+    options: { data: { display_name: body.display_name } },
+  });
+  if (error) {
+    const status = error.code === 'user_already_exists' || error.code === 'email_exists' ? 409 : 400;
+    throw new HttpError(status, status === 409 ? 'Email ini sudah terdaftar' : error.message);
+  }
+  res.status(201).json({
+    user_id: data.user?.id,
+    email_confirmation_required: !data.session,
+    access_token: data.session?.access_token ?? null,
+  });
+});
+
 /** Login untuk mencoba API lewat Swagger. Aplikasi HP login langsung ke Supabase. */
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = z.object({ email: z.string().email('Email tidak valid'), password: z.string().min(1) }).parse(req.body);
