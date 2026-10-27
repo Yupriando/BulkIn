@@ -4,8 +4,10 @@ import 'package:intl/intl.dart';
 import '../api.dart';
 import '../format.dart';
 import '../models.dart';
+import '../offline.dart';
 import '../widgets/brand.dart';
 import '../widgets/entry_sheet.dart';
+import '../widgets/kcal_calendar.dart';
 import '../widgets/error_view.dart';
 import '../widgets/weight_dialog.dart';
 
@@ -22,13 +24,25 @@ class _TodayScreenState extends State<TodayScreen> {
 
   void _reload() => setState(() => _future = Api.instance.getDay(_date));
 
+  @override
+  void initState() {
+    super.initState();
+    SyncStatus.synced.addListener(_reload); // antrean offline terkirim: ambil data terbaru dari server
+  }
+
+  @override
+  void dispose() {
+    SyncStatus.synced.removeListener(_reload);
+    super.dispose();
+  }
+
   void _changeDate(DateTime d) {
     _date = DateUtils.dateOnly(d);
     _reload();
   }
 
   Future<void> _pickDate() async {
-    final d = await showDatePicker(context: context, initialDate: _date, firstDate: DateTime(2020), lastDate: DateTime.now());
+    final d = await showKcalCalendar(context, selected: _date);
     if (d != null) _changeDate(d);
   }
 
@@ -159,7 +173,7 @@ class _SummaryCard extends StatelessWidget {
                       value: progress,
                       strokeWidth: 11,
                       backgroundColor: white.withValues(alpha: 0.22),
-                      color: reached ? Brand.volt : white,
+                      color: reached ? Brand.mint : white,
                       strokeCap: StrokeCap.round,
                     ),
                     Center(
@@ -193,13 +207,13 @@ class _SummaryCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: reached ? Brand.volt : Colors.black.withValues(alpha: 0.2),
+                        color: reached ? Brand.mint : Colors.black.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         reached ? '🔥 Tercapai +${fmtKcal(-remaining)}' : 'Kurang ${fmtKcal(remaining)}',
                         style: theme.textTheme.labelLarge?.copyWith(
-                          color: reached ? Brand.ink : white,
+                          color: reached ? Brand.navyDeep : white,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -227,7 +241,7 @@ class _SummaryCard extends StatelessWidget {
               value: proteinProgress,
               minHeight: 8,
               backgroundColor: white.withValues(alpha: 0.22),
-              color: proteinProgress >= 1 ? Brand.volt : white,
+              color: proteinProgress >= 1 ? Brand.mint : white,
             ),
           ),
         ],
@@ -321,9 +335,22 @@ class _MealCard extends StatelessWidget {
               dense: true,
               title: Text(e.foodName),
               subtitle: Text(_amount(e)),
-              trailing: Text(
-                e.kcal == 0 ? '? kkal' : fmtKcal(e.kcal),
-                style: e.kcal == 0 ? TextStyle(color: theme.colorScheme.error) : null,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (e.isPending)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: Tooltip(
+                        message: 'Belum terkirim ke server',
+                        child: Icon(Icons.cloud_upload_outlined, size: 16, color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ),
+                  Text(
+                    e.kcal == 0 ? '? kkal' : fmtKcal(e.kcal),
+                    style: e.kcal == 0 ? TextStyle(color: theme.colorScheme.error) : null,
+                  ),
+                ],
               ),
               onTap: () => onEdit(e),
             ),

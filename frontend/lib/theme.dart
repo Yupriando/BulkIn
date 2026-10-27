@@ -25,27 +25,27 @@ class ThemeController {
 
 ThemeData buildTheme(Brightness brightness) {
   final dark = brightness == Brightness.dark;
-  // "fidelity" menjaga warna utama tetap oranye menyala (bukan oranye pucat).
+  // "fidelity" menjaga warna utama tetap biru tua (bukan biru pucat).
   final scheme = ColorScheme.fromSeed(
-    seedColor: Brand.ember,
+    seedColor: Brand.navy,
     brightness: brightness,
     dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
   ).copyWith(
-    primary: dark ? const Color(0xFFFF7A2E) : const Color(0xFFE04A0C),
-    onPrimary: dark ? const Color(0xFF1F0A00) : Colors.white,
-    primaryContainer: dark ? const Color(0xFF4A1E0A) : const Color(0xFFFFE3D3),
-    onPrimaryContainer: dark ? const Color(0xFFFFDCC8) : const Color(0xFF4A1700),
-    secondary: dark ? Brand.volt : const Color(0xFF4F7A00),
-    onSecondary: dark ? Brand.ink : Colors.white,
+    primary: dark ? const Color(0xFF6EA1FF) : Brand.navy,
+    onPrimary: dark ? Brand.navyDeep : Colors.white,
+    primaryContainer: dark ? const Color(0xFF1B3366) : const Color(0xFFDCE6FF),
+    onPrimaryContainer: dark ? const Color(0xFFD6E3FF) : Brand.navyDark,
+    secondary: dark ? Brand.mint : const Color(0xFF1E8A4C),
+    onSecondary: dark ? Brand.navyDeep : Colors.white,
     tertiary: dark ? const Color(0xFFFFC94D) : const Color(0xFFB7791F),
-    onTertiary: dark ? Brand.ink : Colors.white,
+    onTertiary: dark ? Brand.navyDeep : Colors.white,
     tertiaryContainer: dark ? const Color(0xFF4A3A10) : const Color(0xFFFFF1CC),
     onTertiaryContainer: dark ? const Color(0xFFFFE8A3) : const Color(0xFF4A3205),
-    surface: dark ? Brand.ink : const Color(0xFFFFF8F4),
-    surfaceContainerHighest: dark ? Brand.inkLine : const Color(0xFFF6E7DF),
+    surface: dark ? Brand.ink : const Color(0xFFF4F7FC),
+    surfaceContainerHighest: dark ? Brand.inkLine : const Color(0xFFE4EAF5),
   );
   final cardColor = dark ? Brand.inkCard : Colors.white;
-  final lineColor = dark ? Brand.inkLine : const Color(0xFFF1E2DA);
+  final lineColor = dark ? Brand.inkLine : const Color(0xFFE1E8F3);
   final rounded = RoundedRectangleBorder(borderRadius: BorderRadius.circular(16));
   final base = ThemeData(brightness: brightness, useMaterial3: true).textTheme;
   // Judul lebih tebal & rapat supaya terasa tegas.
@@ -87,7 +87,7 @@ ThemeData buildTheme(Brightness brightness) {
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: dark ? const Color(0xFF3A3542) : const Color(0xFFE6D3C9)),
+        borderSide: BorderSide(color: dark ? const Color(0xFF2A3B5E) : const Color(0xFFCBD5E6)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),

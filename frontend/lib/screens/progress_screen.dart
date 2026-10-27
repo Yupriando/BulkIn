@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../api.dart';
 import '../format.dart';
 import '../models.dart';
+import '../offline.dart';
 import '../widgets/error_view.dart';
 import '../widgets/weight_dialog.dart';
 
@@ -29,6 +30,18 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   void _reload() => setState(() => _future = _load());
+
+  @override
+  void initState() {
+    super.initState();
+    SyncStatus.synced.addListener(_reload); // antrean offline terkirim: ambil data terbaru dari server
+  }
+
+  @override
+  void dispose() {
+    SyncStatus.synced.removeListener(_reload);
+    super.dispose();
+  }
 
   Future<void> _useTarget(int kcal) async {
     try {

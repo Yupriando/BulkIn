@@ -28,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   late final _badgeScale = _interval(0.0, 0.35, Curves.elasticOut);
   late final _badgeFade = _interval(0.0, 0.15);
-  late final _line = _interval(0.15, 0.6, Curves.easeInOutCubic);
+  late final _line = _interval(0.1, 0.75, Curves.linear); // easing per bagian ada di FoodScalePainter
   late final _pulse = _interval(0.55, 0.85, Curves.easeOut);
   late final _title = _interval(0.5, 0.8);
   late final _tagline = _interval(0.68, 0.95);

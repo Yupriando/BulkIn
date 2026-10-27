@@ -116,6 +116,9 @@ class MealEntry {
         kcal: _toDouble(j['kcal']) ?? 0,
         protein: _toDouble(j['protein']) ?? 0,
       );
+
+  /// Dicatat saat offline dan belum terkirim ke server.
+  bool get isPending => id < 0;
 }
 
 class WeightLog {

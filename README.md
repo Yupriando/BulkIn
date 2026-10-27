@@ -16,6 +16,7 @@ backend/   API Node.js + Express → deploy ke Vercel
 - **Makanan** — ±65 makanan bawaan (nasi, oatmeal, ayam tepung, Mie Gacoan, Pro Gainer, dst). Bisa tambah sendiri atau koreksi angkanya.
 - **Tanya AI** — makanan belum ada di daftar? Ketik namanya (mis. "bubur ayam"), AI (Gemini, gratis) memperkirakan kalori & protein per 100 g, lalu tersimpan ke daftar. Kamu tinggal isi gram.
 - **Kebutuhan kalori** — dihitung dari data kamu sendiri: rata-rata kalori yang dimakan dikurangi perubahan berat pagi × 7.700 kkal/kg (28 hari terakhir). Ada tombol untuk langsung menjadikannya target (naik 0,25 atau 0,5 kg/minggu).
+- **Bisa offline** — catatan makan, berat badan, dan target tetap bisa dicatat tanpa internet. Disimpan dulu di HP, lalu dikirim otomatis ke database saat online lagi. (Tanya AI dan tambah/edit daftar makanan tetap butuh internet.)
 - **Import catatan lama** — 50 hari catatan manual kamu bisa langsung dimasukkan.
 
 ---

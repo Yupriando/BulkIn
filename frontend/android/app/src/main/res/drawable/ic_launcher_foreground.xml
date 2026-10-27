@@ -1,14 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Logo BulkIn: garis grafik yang naik. Sama dengan RisingLinePainter di Flutter. -->
+<!-- Logo BulkIn: apel di atas timbangan dapur. Sama dengan FoodScalePainter di Flutter. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:pathData="M32,72 L47,57 L57,66 L76,46 M64,46 L76,46 L76,58"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="7"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
+    <!-- Diperkecil sedikit supaya aman dari potongan bentuk ikon (lingkaran/squircle) -->
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.88"
+        android:scaleY="0.88"
+        android:translateY="1">
+        <!-- Piringan & tiang timbangan -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M36,50 H72 A2,2 0 0 1 72,54 H36 A2,2 0 0 1 36,50 Z M51,53 H57 V57 H51 Z" />
+        <!-- Badan timbangan, lubang bulat untuk jarum -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:fillType="evenOdd"
+            android:pathData="M37,56 H71 A7,7 0 0 1 78,63 V75 A7,7 0 0 1 71,82 H37 A7,7 0 0 1 30,75 V63 A7,7 0 0 1 37,56 Z M46,69 A8,8 0 1 0 62,69 A8,8 0 1 0 46,69 Z" />
+        <!-- Jarum -->
+        <path
+            android:pathData="M54,69 L58.6,64.4"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="2.2"
+            android:strokeLineCap="round" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M52.4,69 A1.6,1.6 0 1 0 55.6,69 A1.6,1.6 0 1 0 52.4,69 Z" />
+        <!-- Apel -->
+        <path
+            android:fillColor="#7BE495"
+            android:pathData="M41.5,40.5 A8.5,8.5 0 1 1 58.5,40.5 A8.5,8.5 0 1 1 41.5,40.5 Z M49.5,40.5 A8.5,8.5 0 1 1 66.5,40.5 A8.5,8.5 0 1 1 49.5,40.5 Z M44,44.5 A10,4.5 0 1 1 64,44.5 A10,4.5 0 1 1 44,44.5 Z" />
+        <path
+            android:pathData="M54,33.5 L55.5,28"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="2.2"
+            android:strokeLineCap="round" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M56,30 Q58,23.5 65,24.5 Q63,31 56,30 Z" />
+    </group>
 </vector>
