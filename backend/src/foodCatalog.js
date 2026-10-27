@@ -1,4 +1,4 @@
-// Makanan bawaan NaikIn. Angka per 100 g / per satuan.
+// Makanan bawaan BulkIn. Angka per 100 g / per satuan.
 // Yang bertanda "dari catatan" dihitung dari angka yang sudah kamu tulis di catatan manual;
 // sisanya estimasi umum — silakan koreksi lewat menu Makanan di aplikasi.
 //

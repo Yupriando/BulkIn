@@ -50,7 +50,7 @@ class AuthScaffold extends StatelessWidget {
                         child: Column(
                           children: [
                             SizedBox(height: showBack ? 0 : 40),
-                            const NaikInBadge(size: 84),
+                            const BulkInBadge(size: 84),
                             const SizedBox(height: 16),
                             Text(
                               title,

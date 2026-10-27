@@ -110,7 +110,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                               opacity: _badgeFade.value,
                               child: Transform.scale(
                                 scale: 0.4 + 0.6 * _badgeScale.value,
-                                child: NaikInBadge(size: 120, progress: _line.value),
+                                child: BulkInBadge(size: 120, progress: _line.value),
                               ),
                             ),
                           ],
@@ -121,11 +121,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                         opacity: _title.value,
                         child: Transform.translate(
                           offset: Offset(0, 24 * (1 - _title.value)),
-                          child: Text.rich(
-                            TextSpan(children: [
-                              const TextSpan(text: 'Naik'),
-                              TextSpan(text: 'In', style: TextStyle(color: Brand.accent)),
-                            ]),
+                          child: BulkInWordmark(
                             style: textTheme.displayMedium?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,
@@ -138,7 +134,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       Opacity(
                         opacity: _tagline.value,
                         child: Text(
-                          'Naik pelan-pelan, konsisten tiap hari',
+                          'Makan cukup, naik konsisten',
                           style: textTheme.titleMedium?.copyWith(color: Colors.white.withValues(alpha: 0.85)),
                         ),
                       ),

@@ -21,7 +21,7 @@ const { values: args } = parseArgs({
   },
 });
 if (!args.email) {
-  console.error('Wajib isi --email (email akun NaikIn kamu). Daftar dulu lewat aplikasi.');
+  console.error('Wajib isi --email (email akun BulkIn kamu). Daftar dulu lewat aplikasi.');
   process.exit(1);
 }
 

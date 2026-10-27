@@ -2,4 +2,4 @@
 import app from './app.js';
 
 const port = Number(process.env.PORT) || 3000;
-app.listen(port, () => console.log(`NaikIn API jalan di http://localhost:${port}`));
+app.listen(port, () => console.log(`BulkIn API jalan di http://localhost:${port}`));

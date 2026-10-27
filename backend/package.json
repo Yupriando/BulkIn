@@ -1,8 +1,8 @@
 {
-  "name": "naikin-api",
+  "name": "bulkin-api",
   "version": "1.0.0",
   "private": true,
-  "description": "Backend NaikIn — pencatat kalori & berat badan",
+  "description": "Backend BulkIn — pencatat kalori & berat badan",
   "type": "module",
   "engines": {
     "node": ">=20"

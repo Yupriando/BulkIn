@@ -1,4 +1,4 @@
-// Semua "tanggal" di NaikIn mengikuti zona waktu user (default WIB, +07:00).
+// Semua "tanggal" di BulkIn mengikuti zona waktu user (default WIB, +07:00).
 
 export const TZ_OFFSET = process.env.APP_TZ_OFFSET || '+07:00';
 

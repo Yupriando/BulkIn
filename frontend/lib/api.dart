@@ -16,7 +16,7 @@ class ApiException implements Exception {
 
 String isoDate(DateTime d) => DateFormat('yyyy-MM-dd').format(d);
 
-/// Klien untuk backend NaikIn. Token login diambil dari sesi Supabase (diperbarui otomatis).
+/// Klien untuk backend BulkIn. Token login diambil dari sesi Supabase (diperbarui otomatis).
 class Api {
   Api._();
   static final instance = Api._();

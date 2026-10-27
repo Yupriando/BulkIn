@@ -13,7 +13,7 @@ import 'theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ThemeController.load(); // cepat; supaya splash langsung tampil di mode yang benar
-  runApp(const NaikInApp());
+  runApp(const BulkInApp());
 }
 
 bool _supabaseReady = false;
@@ -28,8 +28,8 @@ Future<void> _initApp() async {
   }
 }
 
-class NaikInApp extends StatelessWidget {
-  const NaikInApp({super.key});
+class BulkInApp extends StatelessWidget {
+  const BulkInApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class NaikInApp extends StatelessWidget {
 
   Widget _app(ThemeMode mode) {
     return MaterialApp(
-      title: 'NaikIn',
+      title: 'BulkIn',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),

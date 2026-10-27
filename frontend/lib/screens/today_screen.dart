@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../api.dart';
 import '../format.dart';
 import '../models.dart';
+import '../widgets/brand.dart';
 import '../widgets/entry_sheet.dart';
 import '../widgets/error_view.dart';
 import '../widgets/weight_dialog.dart';
@@ -121,6 +122,7 @@ class _TodayScreenState extends State<TodayScreen> {
   }
 }
 
+/// Kartu utama bergradasi: cincin kalori, sisa target, dan bar protein.
 class _SummaryCard extends StatelessWidget {
   final DaySummary day;
   const _SummaryCard({required this.day});
@@ -128,60 +130,107 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final progress = day.kcalTarget == 0 ? 0.0 : (day.totalKcal / day.kcalTarget).clamp(0.0, 1.0);
+    final percent = day.kcalTarget == 0 ? 0 : (day.totalKcal / day.kcalTarget * 100).round();
+    final proteinProgress = day.proteinTarget == 0 ? 0.0 : (day.totalProtein / day.proteinTarget).clamp(0.0, 1.0);
     final remaining = day.kcalTarget - day.totalKcal;
     final reached = remaining <= 0;
+    const white = Colors.white;
+    final soft = white.withValues(alpha: 0.8);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            SizedBox.square(
-              dimension: 110,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  CircularProgressIndicator(
-                    value: progress,
-                    strokeWidth: 10,
-                    backgroundColor: scheme.surfaceContainerHighest,
-                    color: reached ? scheme.primary : scheme.tertiary,
-                    strokeCap: StrokeCap.round,
-                  ),
-                  Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('${(day.totalKcal / day.kcalTarget * 100).round()}%', style: theme.textTheme.headlineSmall),
-                        Text('target', style: theme.textTheme.bodySmall),
-                      ],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: Brand.gradientOf(context),
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: Brand.glowOf(context),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              SizedBox.square(
+                dimension: 116,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    CircularProgressIndicator(
+                      value: progress,
+                      strokeWidth: 11,
+                      backgroundColor: white.withValues(alpha: 0.22),
+                      color: reached ? Brand.volt : white,
+                      strokeCap: StrokeCap.round,
                     ),
-                  ),
-                ],
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('$percent%', style: theme.textTheme.headlineSmall?.copyWith(color: white)),
+                          Text('target', style: theme.textTheme.bodySmall?.copyWith(color: soft)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(fmtKcal(day.totalKcal), style: theme.textTheme.headlineSmall),
-                  Text('dari ${fmtKcal(day.kcalTarget)}', style: theme.textTheme.bodyMedium),
-                  const SizedBox(height: 8),
-                  Text(
-                    reached ? 'Target tercapai! +${fmtKcal(-remaining)}' : 'Kurang ${fmtKcal(remaining)} lagi',
-                    style: theme.textTheme.titleSmall?.copyWith(color: reached ? scheme.primary : scheme.tertiary),
-                  ),
-                  const SizedBox(height: 4),
-                  Text('Protein ${fmtNum(day.totalProtein.round())} / ${day.proteinTarget} g',
-                      style: theme.textTheme.bodySmall),
-                ],
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('KALORI', style: theme.textTheme.labelMedium?.copyWith(color: soft, letterSpacing: 1.5)),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        fmtKcal(day.totalKcal),
+                        style: theme.textTheme.headlineMedium?.copyWith(color: white, fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                    Text('dari ${fmtKcal(day.kcalTarget)}', style: theme.textTheme.bodyMedium?.copyWith(color: soft)),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: reached ? Brand.volt : Colors.black.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        reached ? '🔥 Tercapai +${fmtKcal(-remaining)}' : 'Kurang ${fmtKcal(remaining)}',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: reached ? Brand.ink : white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Text('Protein', style: theme.textTheme.labelLarge?.copyWith(color: white, fontWeight: FontWeight.w700)),
+              const Spacer(),
+              Text(
+                '${fmtNum(day.totalProtein.round())} / ${day.proteinTarget} g',
+                style: theme.textTheme.labelLarge?.copyWith(color: soft),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: proteinProgress,
+              minHeight: 8,
+              backgroundColor: white.withValues(alpha: 0.22),
+              color: proteinProgress >= 1 ? Brand.volt : white,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -224,6 +273,14 @@ class _WeightCard extends StatelessWidget {
   }
 }
 
+const _mealIcons = {
+  'sarapan': Icons.wb_twilight,
+  'siang': Icons.wb_sunny_outlined,
+  'sore': Icons.local_cafe_outlined,
+  'malam': Icons.nightlight_outlined,
+  'camilan': Icons.cookie_outlined,
+};
+
 class _MealCard extends StatelessWidget {
   final String type;
   final List<MealEntry> entries;
@@ -246,6 +303,15 @@ class _MealCard extends StatelessWidget {
       child: Column(
         children: [
           ListTile(
+            leading: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(_mealIcons[type] ?? Icons.restaurant, color: theme.colorScheme.onPrimaryContainer, size: 22),
+            ),
             title: Text(mealLabels[type]!, style: theme.textTheme.titleMedium),
             subtitle: entries.isEmpty ? null : Text(fmtKcal(subtotal)),
             trailing: IconButton(tooltip: 'Tambah ke ${mealLabels[type]}', icon: const Icon(Icons.add_circle_outline), onPressed: onAdd),

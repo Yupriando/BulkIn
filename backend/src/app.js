@@ -4,7 +4,7 @@ import { clientForToken, anonClient } from './supabase.js';
 import { openapiSpec, swaggerHtml } from './openapi.js';
 import { computeNutrition, sumNutrition, linearSlope } from './nutrition.js';
 import { today, addDays, daysBetween, localDate, dayStart, dayEnd } from './dates.js';
-import { estimateFood, isAiConfigured, AiEstimateError, AI_MODEL } from './aiNutrition.js';
+import { estimateFood, isAiConfigured, AiEstimateError, AI_MODEL, AI_PROVIDER } from './aiNutrition.js';
 import { estimateEnergy } from './energy.js';
 
 export const MEAL_TYPES = ['sarapan', 'siang', 'sore', 'malam', 'camilan'];
@@ -79,13 +79,13 @@ async function health(_req, res) {
   const ok = missing.length === 0 && database.ok;
   res.status(ok ? 200 : 503).json({
     ok,
-    app: 'NaikIn',
+    app: 'BulkIn',
     version: '1.0.0',
     time: new Date().toISOString(),
     checks: {
       env: { ok: missing.length === 0, missing },
       database,
-      ai: { configured: isAiConfigured(), model: AI_MODEL },
+      ai: { configured: isAiConfigured(), provider: AI_PROVIDER, model: AI_MODEL },
     },
   });
 }
@@ -180,7 +180,7 @@ api.post('/foods', async (req, res) => {
 
 /** Tanya AI kalori sebuah makanan. Hasilnya belum disimpan — app menampilkan dulu, lalu menyimpan lewat POST /foods. */
 api.post('/foods/estimate', async (req, res) => {
-  if (!isAiConfigured()) throw new HttpError(503, 'Fitur AI belum diaktifkan (ANTHROPIC_API_KEY belum di-set di server)');
+  if (!isAiConfigured()) throw new HttpError(503, 'Fitur AI belum diaktifkan (GEMINI_API_KEY belum di-set di server)');
   const { name } = z.object({ name: z.string().trim().min(2, 'Isi nama makanan').max(80) }).parse(req.body);
   try {
     res.json(await estimateFood(name));

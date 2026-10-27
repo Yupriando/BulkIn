@@ -14,7 +14,7 @@ const errors = {
 export const openapiSpec = {
   openapi: '3.0.3',
   info: {
-    title: 'NaikIn API',
+    title: 'BulkIn API',
     version: '1.0.0',
     description:
       'Backend pencatat kalori & berat badan.\n\n' +
@@ -38,7 +38,7 @@ export const openapiSpec = {
         type: 'object',
         properties: {
           ok: { type: 'boolean' },
-          app: { type: 'string', example: 'NaikIn' },
+          app: { type: 'string', example: 'BulkIn' },
           version: { type: 'string' },
           time: { type: 'string', format: 'date-time' },
           checks: {
@@ -46,7 +46,7 @@ export const openapiSpec = {
             properties: {
               env: { type: 'object', properties: { ok: { type: 'boolean' }, missing: { type: 'array', items: { type: 'string' } } } },
               database: { type: 'object', properties: { ok: { type: 'boolean' }, latency_ms: { type: 'integer' }, error: { type: 'string' } } },
-              ai: { type: 'object', properties: { configured: { type: 'boolean' }, model: { type: 'string' } } },
+              ai: { type: 'object', properties: { configured: { type: 'boolean' }, provider: { type: 'string', example: 'gemini' }, model: { type: 'string' } } },
             },
           },
         },
@@ -338,7 +338,7 @@ export const swaggerHtml = `<!doctype html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NaikIn API Docs</title>
+  <title>BulkIn API Docs</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui.css" />
 </head>
 <body>

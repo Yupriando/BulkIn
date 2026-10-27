@@ -1,8 +1,15 @@
-// Estimasi kalori & protein makanan memakai Claude API.
+// Estimasi kalori & protein makanan memakai AI.
+// Gemini (ada paket gratis) dipakai kalau GEMINI_API_KEY diisi; kalau tidak, Claude (ANTHROPIC_API_KEY).
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 
-export const AI_MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-5-5';
+const geminiKey = () => process.env.GEMINI_API_KEY?.trim() ?? '';
+const useGemini = () => geminiKey().length > 20;
+
+export const AI_PROVIDER = useGemini() ? 'gemini' : 'claude';
+export const AI_MODEL = useGemini()
+  ? process.env.GEMINI_MODEL || 'gemini-flash-latest'
+  : process.env.ANTHROPIC_MODEL || 'claude-opus-5-5';
 
 const nullableNumber = { anyOf: [{ type: 'number' }, { type: 'null' }] };
 const nullableString = { anyOf: [{ type: 'string' }, { type: 'null' }] };
@@ -35,6 +42,24 @@ const resultSchema = z.object({
   assumption: z.string().max(400),
 });
 
+// Skema yang sama dalam format Gemini (subset OpenAPI).
+const geminiNumber = { type: 'NUMBER', nullable: true };
+const GEMINI_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    is_food: { type: 'BOOLEAN' },
+    name: { type: 'STRING' },
+    kcal_per_100g: geminiNumber,
+    protein_per_100g: geminiNumber,
+    unit_name: { type: 'STRING', nullable: true },
+    kcal_per_unit: geminiNumber,
+    protein_per_unit: geminiNumber,
+    assumption: { type: 'STRING' },
+  },
+  required: SCHEMA.required,
+  propertyOrdering: SCHEMA.required,
+};
+
 const SYSTEM = `Kamu ahli gizi yang memperkirakan kandungan kalori dan protein makanan, khususnya makanan Indonesia dan makanan yang umum dijual di Indonesia (warung, restoran, minimarket, merek kemasan).
 
 Untuk nama makanan yang diberikan user:
@@ -49,6 +74,7 @@ Berikan perkiraan terbaikmu walau tidak pasti; user akan menimbang makanannya da
 let client;
 
 export function isAiConfigured() {
+  if (useGemini()) return true;
   // Abaikan nilai contoh dari .env.example ("sk-ant-...")
   const key = process.env.ANTHROPIC_API_KEY ?? '';
   return key.startsWith('sk-ant-') && !key.endsWith('...') && key.length > 30;
@@ -56,10 +82,8 @@ export function isAiConfigured() {
 
 export class AiEstimateError extends Error {}
 
-/**
- * @param {string} foodName contoh: "bubur ayam", "rendang", "Indomie goreng"
- */
-export async function estimateFood(foodName) {
+/** @returns {Promise<string>} teks JSON dari model */
+async function askClaude(foodName) {
   client ??= new Anthropic();
 
   let response;
@@ -82,8 +106,57 @@ export async function estimateFood(foodName) {
 
   if (response.stop_reason === 'refusal') throw new AiEstimateError('AI tidak bisa memperkirakan makanan ini');
   if (response.stop_reason === 'max_tokens') throw new AiEstimateError('Jawaban AI terpotong, coba lagi');
+  return response.content.find((b) => b.type === 'text')?.text;
+}
 
-  const text = response.content.find((b) => b.type === 'text')?.text;
+/** @returns {Promise<string>} teks JSON dari model */
+async function askGemini(foodName) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(AI_MODEL)}:generateContent`;
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': geminiKey() },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: SYSTEM }] },
+        contents: [{ role: 'user', parts: [{ text: foodName }] }],
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: 'application/json',
+          responseSchema: GEMINI_SCHEMA,
+        },
+      }),
+      signal: AbortSignal.timeout(25000),
+    });
+  } catch (err) {
+    if (err.name === 'TimeoutError') throw new AiEstimateError('AI terlalu lama menjawab, coba lagi');
+    throw new AiEstimateError('Tidak bisa terhubung ke layanan AI');
+  }
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const message = body.error?.message ?? `HTTP ${res.status}`;
+    if (res.status === 429) throw new AiEstimateError('Kuota AI gratis sedang habis, coba lagi sebentar lagi');
+    if (res.status === 400 && /api key/i.test(message)) throw new AiEstimateError('API key AI tidak valid');
+    if (res.status === 403) throw new AiEstimateError('API key AI tidak valid atau tidak punya akses');
+    if (res.status === 404) throw new AiEstimateError(`Model AI "${AI_MODEL}" tidak ditemukan`);
+    throw new Error(`Gemini: ${message}`);
+  }
+
+  if (body.promptFeedback?.blockReason) throw new AiEstimateError('AI tidak bisa memperkirakan makanan ini');
+  const candidate = body.candidates?.[0];
+  if (candidate?.finishReason === 'MAX_TOKENS') throw new AiEstimateError('Jawaban AI terpotong, coba lagi');
+  if (candidate?.finishReason && candidate.finishReason !== 'STOP') {
+    throw new AiEstimateError('AI tidak bisa memperkirakan makanan ini');
+  }
+  return candidate?.content?.parts?.map((p) => p.text ?? '').join('');
+}
+
+/**
+ * @param {string} foodName contoh: "bubur ayam", "rendang", "Indomie goreng"
+ */
+export async function estimateFood(foodName) {
+  const text = useGemini() ? await askGemini(foodName) : await askClaude(foodName);
   let parsed;
   try {
     parsed = resultSchema.parse(JSON.parse(text ?? ''));

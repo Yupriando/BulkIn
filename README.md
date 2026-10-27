@@ -1,10 +1,10 @@
-# NaikIn 📈
+# BulkIn 💪
 
-Aplikasi Android untuk mencatat makanan, kalori, dan berat badan harian — dibuat untuk program **naik berat badan**.
+Aplikasi Android untuk mencatat makanan, kalori, dan berat badan harian — dibuat untuk program **bulking** (naik berat badan).
 Kamu cukup pilih makanan dan ketik beratnya (gram) atau jumlahnya (bungkus/porsi), kalori & protein dihitung otomatis.
 
 ```
-mobile/    Aplikasi Flutter (Android)
+frontend/  Aplikasi Flutter (Android)
 backend/   API Node.js + Express → deploy ke Vercel
            Database: Supabase (Postgres + Auth)
 ```
@@ -14,7 +14,7 @@ backend/   API Node.js + Express → deploy ke Vercel
 - **Harian** — catat makanan per waktu makan (sarapan, siang, sore, malam, camilan), lihat progres kalori vs target 3.000 kkal, dan timbangan hari itu (bisa lebih dari sekali sehari, lengkap dengan jam & kondisi belum/sudah makan).
 - **Progres** — grafik berat badan pagi & kalori harian (7/30/90 hari), tren kg/minggu, rata-rata kalori, dan saran singkat.
 - **Makanan** — ±65 makanan bawaan (nasi, oatmeal, ayam tepung, Mie Gacoan, Pro Gainer, dst). Bisa tambah sendiri atau koreksi angkanya.
-- **Tanya AI** — makanan belum ada di daftar? Ketik namanya (mis. "bubur ayam"), AI (Claude) memperkirakan kalori & protein per 100 g, lalu tersimpan ke daftar. Kamu tinggal isi gram.
+- **Tanya AI** — makanan belum ada di daftar? Ketik namanya (mis. "bubur ayam"), AI (Gemini, gratis) memperkirakan kalori & protein per 100 g, lalu tersimpan ke daftar. Kamu tinggal isi gram.
 - **Kebutuhan kalori** — dihitung dari data kamu sendiri: rata-rata kalori yang dimakan dikurangi perubahan berat pagi × 7.700 kkal/kg (28 hari terakhir). Ada tombol untuk langsung menjadikannya target (naik 0,25 atau 0,5 kg/minggu).
 - **Import catatan lama** — 50 hari catatan manual kamu bisa langsung dimasukkan.
 
@@ -35,7 +35,7 @@ backend/   API Node.js + Express → deploy ke Vercel
 ```bash
 cd backend
 npm install
-cp .env.example .env      # lalu isi SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+cp .env.example .env      # lalu isi SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY
 npm run seed              # isi daftar makanan bawaan
 npm test                  # opsional
 npm run dev               # API jalan di http://localhost:3000
@@ -55,18 +55,18 @@ Di dashboard Vercel → project → **Settings → Environment Variables**, tamb
 | `SUPABASE_URL` | Project URL |
 | `SUPABASE_ANON_KEY` | anon / publishable key |
 | `APP_TZ_OFFSET` | `+07:00` (WIB) |
-| `ANTHROPIC_API_KEY` | API key Claude, untuk fitur "Tanya AI" |
+| `GEMINI_API_KEY` | API key Gemini (gratis, dari <https://aistudio.google.com/apikey>), untuk fitur "Tanya AI" |
 
 > **Jangan** masukkan `SUPABASE_SERVICE_ROLE_KEY` ke Vercel — API memakai token login user sehingga Row Level Security Supabase tetap melindungi data.
 
-Lalu `npx vercel --prod`. Cek: buka `https://<nama-project>.vercel.app/api/health` → harus muncul `{"ok":true,"app":"NaikIn"}`.
+Lalu `npx vercel --prod`. Cek: buka `https://<nama-project>.vercel.app/api/health` → harus muncul `{"ok":true,"app":"BulkIn"}`.
 
 Kalau project-nya di GitHub, bisa juga import repo di Vercel dan set **Root Directory = `backend`**.
 
 ## 4. Jalankan aplikasi Flutter
 
 ```bash
-cd mobile
+cd frontend
 cp config.example.json config.json   # isi SUPABASE_URL, SUPABASE_ANON_KEY, API_BASE_URL (URL Vercel)
 flutter run --dart-define-from-file=config.json
 ```
@@ -75,7 +75,7 @@ Build APK untuk dipasang di HP:
 
 ```bash
 flutter build apk --release --dart-define-from-file=config.json
-# hasil: mobile/build/app/outputs/flutter-apk/app-release.apk
+# hasil: frontend/build/app/outputs/flutter-apk/app-release.apk
 ```
 
 > Untuk tes dengan backend lokal di emulator Android, pakai `"API_BASE_URL": "http://10.0.2.2:3000"`.
