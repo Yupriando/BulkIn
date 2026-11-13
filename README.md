@@ -122,3 +122,18 @@ Semua endpoint (kecuali `/health`, `/docs`, `/api/auth/login`) butuh header `Aut
 | GET | `/api/energy?from=&to=` | perkiraan kebutuhan kalori (default 28 hari terakhir) |
 
 Nilai kalori makanan bawaan sebagian diambil dari angka di catatanmu sendiri, sisanya estimasi umum — silakan koreksi di menu **Makanan**.
+
+## Versi web (Try It Live di portofolio)
+Online di **https://bulkin-app.vercel.app** (project Vercel `bulkin-app`, terpisah dari backend `bulk-in`).
+Akun demo bersama: `demo@bulkin.app` / `bulkin-demo` (sudah berisi contoh catatan makan & berat 10 hari).
+
+Backend tidak memasang CORS, jadi versi web memanggil `/api` di domainnya sendiri dan Vercel meneruskannya
+ke `https://bulk-in.vercel.app/api` (aturan di `frontend/web/vercel.json`, ikut tersalin ke `build/web`).
+Karena itu `API_BASE_URL` versi web = alamat web itu sendiri:
+
+```bash
+cd frontend
+# salin config.json lalu ganti API_BASE_URL jadi https://bulkin-app.vercel.app (simpan sebagai config.web.json)
+flutter build web --release --dart-define-from-file=config.web.json
+npx vercel deploy build/web --prod --yes --project bulkin-app
+```
