@@ -3,7 +3,10 @@
 Aplikasi Android untuk mencatat makanan, kalori, dan berat badan harian — dibuat untuk program **bulking** (naik berat badan).
 Kamu cukup pilih makanan dan ketik beratnya (gram) atau jumlahnya (bungkus/porsi), kalori & protein dihitung otomatis.
 
+📱 **Unduh APK:** [apk/BulkIn-v1.0.0.apk](apk/BulkIn-v1.0.0.apk)
+
 ```
+apk/       APK siap pasang
 frontend/  Aplikasi Flutter (Android)
 backend/   API Node.js + Express → deploy ke Vercel
            Database: Supabase (Postgres + Auth)
