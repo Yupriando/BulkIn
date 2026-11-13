@@ -62,10 +62,15 @@ const REQUIRED_ENV = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'];
 async function checkDatabase() {
   const started = Date.now();
   try {
-    const r = await fetch(`${process.env.SUPABASE_URL}/auth/v1/health`, {
-      headers: { apikey: process.env.SUPABASE_ANON_KEY },
+    // Query sungguhan ke Postgres (bukan cuma /auth/v1/health) supaya dihitung sebagai aktivitas database
+    // dan project Supabase gratis tidak di-pause. Dipanggil harian oleh Vercel Cron (lihat vercel.json).
+    const r = await fetch(`${process.env.SUPABASE_URL}/rest/v1/rpc/ping`, {
+      method: 'POST',
+      headers: { apikey: process.env.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: '{}',
       signal: AbortSignal.timeout(5000),
     });
+    if (r.status === 404) return { ok: false, error: 'Fungsi public.ping() belum ada — jalankan bagian "Keep-alive" di supabase/schema.sql' };
     if (!r.ok) return { ok: false, error: `Supabase membalas HTTP ${r.status}` };
     return { ok: true, latency_ms: Date.now() - started };
   } catch (err) {

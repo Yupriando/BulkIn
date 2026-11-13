@@ -113,3 +113,13 @@ create policy "makan sendiri" on public.meal_entries
 drop policy if exists "berat sendiri" on public.weight_logs;
 create policy "berat sendiri" on public.weight_logs
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- Keep-alive: dipanggil harian oleh /api/health (Vercel Cron) supaya project Supabase gratis
+-- tidak di-pause karena tidak ada aktivitas. Tidak membaca data apa pun.
+create or replace function public.ping()
+returns integer
+language sql
+stable
+as $$ select 1 $$;
+
+grant execute on function public.ping() to anon, authenticated;
