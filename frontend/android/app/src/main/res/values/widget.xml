@@ -13,5 +13,5 @@
     <string name="widget_wide_label">BulkIn · Baris</string>
     <string name="widget_wide_description">Satu baris: kalori hari ini &amp; tombol cepat catat makan</string>
     <string name="widget_mini_label">BulkIn · Mini</string>
-    <string name="widget_mini_description">Kalori hari ini, ketuk untuk buka BulkIn</string>
+    <string name="widget_mini_description">Kalori, sisa target &amp; tombol cepat catat makan dalam ukuran kecil</string>
 </resources>

@@ -19,7 +19,7 @@ import java.util.Locale
  *  - [BulkInWidgetProvider]       3×3  lengkap: kalori, sisa, protein, berat, tombol
  *  - [BulkInWidgetSmallProvider]  2×2  kalori, persen, bar, tombol
  *  - [BulkInWidgetWideProvider]   4×1  satu baris: kalori, bar, tombol
- *  - [BulkInWidgetMiniProvider]   2×1  kalori & bar saja (ketuk untuk buka aplikasi)
+ *  - [BulkInWidgetMiniProvider]   2×1  kalori / target, bar, sisa + persen, tombol bulat "+"
  *
  * Semua layout memakai id yang sama (widget_root, widget_content, widget_signed_out, widget_kcal,
  * widget_kcal_target, widget_percent, widget_progress); sisanya diatur oleh flag di bawah.
@@ -27,7 +27,10 @@ import java.util.Locale
 abstract class BulkInBaseWidget : HomeWidgetProvider() {
     protected abstract val layoutId: Int
 
-    /** Layout punya baris sisa / protein / berat. */
+    /** Layout punya baris "Sisa … kkal" (widget_remaining). */
+    protected open val hasRemaining = false
+
+    /** Layout punya baris protein & berat (widget_protein, widget_weight). */
     protected open val hasDetails = false
 
     /** Layout punya tombol "+ Catat makan". */
@@ -69,15 +72,19 @@ abstract class BulkInBaseWidget : HomeWidgetProvider() {
         views.setTextViewText(R.id.widget_percent, "$percent%")
         views.setProgressBar(R.id.widget_progress, 100, percent.coerceIn(0, 100), false)
 
+        if (hasRemaining) {
+            views.setTextViewText(
+                R.id.widget_remaining,
+                if (isToday) data.getString("remaining", "") else "Belum ada catatan hari ini",
+            )
+        }
         if (hasDetails) {
             if (isToday) {
-                views.setTextViewText(R.id.widget_remaining, data.getString("remaining", ""))
                 views.setTextViewText(R.id.widget_protein, "Protein ${data.getString("protein", "")}")
                 val weight = data.getString("weight", "").orEmpty()
                 views.setTextViewText(R.id.widget_weight, weight)
                 views.setViewVisibility(R.id.widget_weight, if (weight.isEmpty()) View.GONE else View.VISIBLE)
             } else {
-                views.setTextViewText(R.id.widget_remaining, "Belum ada catatan hari ini")
                 views.setTextViewText(R.id.widget_protein, "Protein 0 / ${data.getString("protein_target", "0 g")}")
                 views.setViewVisibility(R.id.widget_weight, View.GONE)
             }
@@ -92,6 +99,7 @@ abstract class BulkInBaseWidget : HomeWidgetProvider() {
 /** 3×3 — lengkap. */
 class BulkInWidgetProvider : BulkInBaseWidget() {
     override val layoutId = R.layout.bulkin_widget
+    override val hasRemaining = true
     override val hasDetails = true
 }
 
@@ -105,8 +113,8 @@ class BulkInWidgetWideProvider : BulkInBaseWidget() {
     override val layoutId = R.layout.bulkin_widget_wide
 }
 
-/** 2×1 — paling ringkas, tanpa tombol. */
+/** 2×1 — kalori / target, bar, sisa + persen, tombol bulat "+". */
 class BulkInWidgetMiniProvider : BulkInBaseWidget() {
     override val layoutId = R.layout.bulkin_widget_mini
-    override val hasAddButton = false
+    override val hasRemaining = true
 }

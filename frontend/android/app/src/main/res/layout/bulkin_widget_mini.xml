@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Widget 2×1: kalori, persen, bar. Tanpa tombol — ketuk untuk membuka aplikasi. Diisi oleh BulkInWidgetMiniProvider. -->
+<!-- Widget 2×1: kalori / target, bar progres, sisa + persen, dan tombol bulat "+" untuk catat makan.
+     Diisi oleh BulkInWidgetMiniProvider. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:gravity="center_vertical"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:paddingStart="12dp"
-    android:paddingTop="8dp"
-    android:paddingEnd="12dp"
-    android:paddingBottom="8dp">
+    android:paddingTop="6dp"
+    android:paddingEnd="8dp"
+    android:paddingBottom="6dp">
 
     <TextView
         android:id="@+id/widget_signed_out"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:ellipsize="end"
-        android:gravity="center"
         android:maxLines="2"
         android:text="Buka BulkIn untuk masuk"
         android:textColor="@color/widget_text_soft"
@@ -26,10 +27,12 @@
 
     <LinearLayout
         android:id="@+id/widget_content"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:orientation="vertical">
 
+        <!-- 2.150 / 3.000 kkal -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -40,32 +43,23 @@
                 android:id="@+id/widget_kcal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:includeFontPadding="false"
                 android:text="0"
                 android:textColor="@color/widget_text"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
-            <!-- Target disembunyikan di 2×1 supaya muat; tetap diisi provider. -->
             <TextView
                 android:id="@+id/widget_kcal_target"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ellipsize="end"
+                android:includeFontPadding="false"
                 android:maxLines="1"
-                android:text=" kkal"
+                android:text=" / 3.000 kkal"
                 android:textColor="@color/widget_text_soft"
-                android:textSize="11sp"
-                android:visibility="invisible" />
-
-            <TextView
-                android:id="@+id/widget_percent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0%"
-                android:textColor="@color/widget_mint"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textSize="11sp" />
         </LinearLayout>
 
         <ProgressBar
@@ -77,5 +71,51 @@
             android:max="100"
             android:progress="0"
             android:progressDrawable="@drawable/widget_progress" />
+
+        <!-- Sisa 850 kkal ............ 72% -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/widget_remaining"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:text="Sisa 3.000 kkal"
+                android:textColor="@color/widget_text_soft"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/widget_percent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:includeFontPadding="false"
+                android:text="0%"
+                android:textColor="@color/widget_mint"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
+
+    <!-- Tombol cepat catat makan -->
+    <TextView
+        android:id="@+id/widget_add"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/widget_button_round"
+        android:contentDescription="Catat makan"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:text="+"
+        android:textColor="@color/widget_on_mint"
+        android:textSize="22sp"
+        android:textStyle="bold" />
 </LinearLayout>
