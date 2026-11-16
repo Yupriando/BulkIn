@@ -6,6 +6,7 @@ import '../api.dart';
 import '../format.dart';
 import '../models.dart';
 import '../offline.dart';
+import '../widgets/brand.dart';
 import '../widgets/error_view.dart';
 import '../widgets/weight_dialog.dart';
 
@@ -94,22 +95,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 _EnergyCard(energy: energy, currentTarget: stats.kcalTarget, onUseTarget: _useTarget),
                 _ChartCard(title: 'Berat badan (pagi)', child: _WeightChart(stats: stats)),
                 _ChartCard(title: 'Kalori per hari', child: _KcalChart(stats: stats)),
-                const SizedBox(height: 16),
-                Text('Riwayat timbangan', style: Theme.of(context).textTheme.titleMedium),
-                if (weights.isEmpty) const Padding(padding: EdgeInsets.all(16), child: Text('Belum ada data.')),
-                for (final w in weights.take(60))
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.monitor_weight_outlined),
-                    title: Text(fmtKg(w.weightKg)),
-                    subtitle: Text([
-                      DateFormat('EEE, d MMM yyyy · HH.mm').format(w.measuredAt),
-                      if (w.condition != null) conditionLabels[w.condition],
-                    ].join(' · ')),
-                    onTap: () async {
-                      if (await showWeightDialog(context, existing: w)) _reload();
-                    },
-                  ),
+                _WeightHistory(
+                  weights: weights.take(60).toList(),
+                  onEdit: (w) async {
+                    if (await showWeightDialog(context, existing: w)) _reload();
+                  },
+                ),
               ],
             ),
           );
@@ -125,38 +116,54 @@ class _SummaryGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final change = stats.weightStart != null && stats.weightEnd != null ? stats.weightEnd! - stats.weightStart! : null;
-    String signed(double v, String unit) => '${v >= 0 ? '+' : ''}${NumberFormat('0.0#', 'id_ID').format(v)} $unit';
+    // Untuk bulking, naik = bagus (hijau), turun = perlu perhatian (merah).
+    Color? trendColor(double? v) => v == null || v == 0 ? null : (v > 0 ? _good(context) : theme.colorScheme.error);
 
     final tiles = [
-      ('Berat terakhir', stats.weightEnd == null ? '—' : fmtKg(stats.weightEnd!)),
-      ('Perubahan', change == null ? '—' : signed(change, 'kg')),
-      ('Tren', stats.weeklyChangeKg == null ? '—' : signed(stats.weeklyChangeKg!, 'kg/minggu')),
-      ('Rata-rata kalori', stats.avgKcal == null ? '—' : fmtKcal(stats.avgKcal!)),
-      ('Capai target', '${stats.daysOnTarget} / ${stats.daysLogged} hari'),
-      ('Rata-rata protein', stats.avgProtein == null ? '—' : '${stats.avgProtein} g'),
+      (Icons.monitor_weight_outlined, Brand.accents[0], 'Berat terakhir',
+          stats.weightEnd == null ? '—' : fmtKg(stats.weightEnd!), null),
+      (Icons.swap_vert, Brand.accents[1], 'Perubahan', change == null ? '—' : _signed(change, 'kg'), trendColor(change)),
+      (Icons.trending_up, Brand.accents[4], 'Tren / minggu',
+          stats.weeklyChangeKg == null ? '—' : _signed(stats.weeklyChangeKg!, 'kg'), trendColor(stats.weeklyChangeKg)),
+      (Icons.local_fire_department_outlined, Brand.accents[2], 'Rata-rata kalori',
+          stats.avgKcal == null ? '—' : fmtKcal(stats.avgKcal!), null),
+      (Icons.flag_outlined, Brand.accents[3], 'Capai target', '${stats.daysOnTarget} / ${stats.daysLogged} hari', null),
+      (Icons.egg_outlined, Brand.accents[5], 'Rata-rata protein',
+          stats.avgProtein == null ? '—' : '${stats.avgProtein} g', null),
     ];
 
     return GridView.count(
       crossAxisCount: 3,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.25,
+      childAspectRatio: 0.98,
       mainAxisSpacing: 8,
       crossAxisSpacing: 8,
       children: [
-        for (final (label, value) in tiles)
+        for (final (icon, color, label, value, valueColor) in tiles)
           Card(
             margin: EdgeInsets.zero,
             child: Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(label, style: Theme.of(context).textTheme.bodySmall),
-                  const SizedBox(height: 4),
-                  FittedBox(child: Text(value, style: Theme.of(context).textTheme.titleMedium)),
+                  IconBadge(icon: icon, color: color, size: 32),
+                  const Spacer(),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(value, style: theme.textTheme.titleMedium?.copyWith(color: valueColor)),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
                 ],
               ),
             ),
@@ -189,16 +196,35 @@ class _Insight extends StatelessWidget {
     }
 
     final scheme = Theme.of(context).colorScheme;
+    final warn = gap > 150;
     return Card(
       margin: const EdgeInsets.only(top: 12),
-      color: gap > 150 ? scheme.tertiaryContainer : scheme.primaryContainer,
+      color: warn ? scheme.tertiaryContainer : scheme.primaryContainer,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.lightbulb_outline),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: (warn ? scheme.onTertiaryContainer : scheme.onPrimaryContainer).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                warn ? Icons.lightbulb_outline : Icons.celebration_outlined,
+                size: 20,
+                color: warn ? scheme.onTertiaryContainer : scheme.onPrimaryContainer,
+              ),
+            ),
             const SizedBox(width: 12),
-            Expanded(child: Text(message)),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(color: warn ? scheme.onTertiaryContainer : scheme.onPrimaryContainer, height: 1.35),
+              ),
+            ),
           ],
         ),
       ),
@@ -218,6 +244,8 @@ class _EnergyCard extends StatelessWidget {
     final theme = Theme.of(context);
     final e = energy;
 
+    final scheme = theme.colorScheme;
+
     return Card(
       margin: const EdgeInsets.only(top: 12),
       child: Padding(
@@ -225,31 +253,46 @@ class _EnergyCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Kebutuhan kalori kamu', style: theme.textTheme.titleMedium),
-            Text('Dihitung dari catatan makan & timbangan pagi ${e.windowDays} hari terakhir',
-                style: theme.textTheme.bodySmall),
-            const SizedBox(height: 12),
+            Row(
+              children: [
+                IconBadge(icon: Icons.bolt, color: Brand.accents[2]),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Kebutuhan kalori kamu', style: theme.textTheme.titleMedium),
+                      Text('Dari catatan makan & timbangan pagi ${e.windowDays} hari terakhir',
+                          style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             if (!e.ok)
               Text('${e.reason}.\nSaat ini: ${e.daysLogged} hari tercatat, ${e.weighIns} kali timbang.')
             else ...[
               Text('± ${fmtKcal(e.tdeeKcal!)} / hari', style: theme.textTheme.headlineSmall),
-              Text('untuk menjaga berat tetap (keyakinan ${e.confidence})', style: theme.textTheme.bodySmall),
-              const SizedBox(height: 8),
+              Text('untuk menjaga berat tetap · keyakinan ${e.confidence}',
+                  style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+              const SizedBox(height: 10),
               Text(
                 'Rata-rata kamu makan ${fmtKcal(e.avgIntakeKcal!)} dan berat '
-                '${e.weeklyChangeKg! >= 0 ? 'naik' : 'turun'} ${fmtNum(e.weeklyChangeKg!.abs())} kg/minggu.',
+                '${e.weeklyChangeKg! >= 0 ? 'naik' : 'turun'} ${_kg(e.weeklyChangeKg!.abs())} kg/minggu.',
+                style: const TextStyle(height: 1.35),
               ),
-              const SizedBox(height: 12),
-              for (final t in e.targets)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  dense: true,
-                  title: Text('Naik ${fmtNum(t.weeklyGainKg)} kg/minggu'),
-                  subtitle: Text('Makan ± ${fmtKcal(t.kcal)} / hari'),
-                  trailing: t.kcal == currentTarget
-                      ? const Chip(label: Text('Target aktif'))
-                      : FilledButton.tonal(onPressed: () => onUseTarget(t.kcal), child: const Text('Jadikan target')),
-                ),
+              const SizedBox(height: 14),
+              Text('Pilih target naik berat', style: theme.textTheme.labelLarge),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  for (final (i, t) in e.targets.indexed) ...[
+                    if (i > 0) const SizedBox(width: 10),
+                    Expanded(child: _TargetOption(target: t, active: t.kcal == currentTarget, onUse: onUseTarget)),
+                  ],
+                ],
+              ),
             ],
           ],
         ),
@@ -257,6 +300,130 @@ class _EnergyCard extends StatelessWidget {
     );
   }
 }
+
+/// Satu pilihan target (mis. naik 0,25 kg/minggu → 2.660 kkal) dalam kotak yang bisa ditekan.
+class _TargetOption extends StatelessWidget {
+  final EnergyTarget target;
+  final bool active;
+  final ValueChanged<int> onUse;
+  const _TargetOption({required this.target, required this.active, required this.onUse});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final fg = active ? scheme.onPrimary : scheme.onSurface;
+    return Material(
+      color: active ? scheme.primary : scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: active ? null : () => onUse(target.kcal),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('+${_kg(target.weeklyGainKg)} kg/minggu',
+                  style: theme.textTheme.labelMedium?.copyWith(color: fg.withValues(alpha: 0.8))),
+              const SizedBox(height: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(fmtKcal(target.kcal), style: theme.textTheme.titleMedium?.copyWith(color: fg)),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(active ? Icons.check_circle : Icons.touch_app_outlined, size: 14, color: fg),
+                  const SizedBox(width: 4),
+                  Text(active ? 'Target aktif' : 'Jadikan target',
+                      style: theme.textTheme.labelSmall?.copyWith(color: fg, fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Riwayat timbangan dengan selisih dari timbangan sebelumnya.
+class _WeightHistory extends StatelessWidget {
+  final List<WeightLog> weights;
+  final ValueChanged<WeightLog> onEdit;
+  const _WeightHistory({required this.weights, required this.onEdit});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Card(
+      margin: const EdgeInsets.only(top: 12),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text('Riwayat timbangan', style: theme.textTheme.titleMedium),
+          ),
+          if (weights.isEmpty)
+            const Padding(padding: EdgeInsets.fromLTRB(16, 0, 16, 16), child: Text('Belum ada data.')),
+          for (final (i, w) in weights.indexed) ...[
+            if (i > 0) Divider(height: 1, indent: 16, endIndent: 16, color: theme.dividerTheme.color),
+            InkWell(
+              onTap: () => onEdit(w),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(fmtKg(w.weightKg), style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                          Text(
+                            [
+                              DateFormat('EEE, d MMM · HH.mm').format(w.measuredAt),
+                              if (w.condition != null) conditionLabels[w.condition],
+                            ].join(' · '),
+                            style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Daftar urut terbaru dulu → bandingkan dengan entri berikutnya (lebih lama).
+                    if (i + 1 < weights.length) _delta(context, w.weightKg - weights[i + 1].weightKg),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 6),
+        ],
+      ),
+    );
+  }
+
+  Widget _delta(BuildContext context, double d) {
+    if (d.abs() < 0.005) return Pill('0 kg', color: Theme.of(context).colorScheme.onSurfaceVariant);
+    final up = d > 0;
+    return Pill(
+      _signed(d, 'kg'),
+      icon: up ? Icons.arrow_upward : Icons.arrow_downward,
+      color: up ? _good(context) : Theme.of(context).colorScheme.error,
+    );
+  }
+}
+
+/// Angka kg dengan 1–2 desimal (0,25 tidak dibulatkan jadi 0,3).
+String _kg(double v) => NumberFormat('0.0#', 'id_ID').format(v);
+String _signed(double v, String unit) => '${v >= 0 ? '+' : ''}${_kg(v)} $unit';
+
+/// Hijau "bagus" yang tetap terbaca di mode terang & gelap.
+Color _good(BuildContext context) => Theme.of(context).colorScheme.secondary;
 
 class _ChartCard extends StatelessWidget {
   final String title;
@@ -350,7 +517,14 @@ class _WeightChart extends StatelessWidget {
             color: scheme.primary,
             barWidth: 3,
             dotData: FlDotData(show: spots.length <= 31),
-            belowBarData: BarAreaData(show: true, color: scheme.primary.withValues(alpha: 0.12)),
+            belowBarData: BarAreaData(
+              show: true,
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [scheme.primary.withValues(alpha: 0.28), scheme.primary.withValues(alpha: 0.0)],
+              ),
+            ),
           ),
         ],
       ),

@@ -8,6 +8,8 @@ Aplikasi Android untuk mencatat makanan, kalori, dan berat badan harian untuk pr
   - **Ringkas (2×2)**: kalori, persen, bar progres, tombol
   - **Baris (4×1)**: satu baris kalori + bar + tombol
   - **Mini (2×1)**: kalori / target, bar, sisa + persen, tombol bulat **+**
+- **Tampilan baru**: warna & ikon tiap waktu makan, angka kalori beranimasi, statistik progres berikon,
+  riwayat timbangan dengan selisih naik/turun, daftar makanan berwarna, dan halaman profil baru.
 
 ### Fitur
 - **Harian**: catat makanan per waktu makan, progres kalori vs target, timbangan harian
@@ -25,4 +27,4 @@ Aplikasi Android untuk mencatat makanan, kalori, dan berat badan harian untuk pr
 ### Pasang widget
 Tekan lama area kosong di layar utama → **Widget** → cari **BulkIn** → pilih ukuran → seret ke layar utama.
 
-SHA-256: `7A2E4184F26916CC89669E61DA7B8928D9E4E545116DBEBC5119BE4D690F808B`
+SHA-256: `E089CB3459B8F83FD625D4F4D2AA1DE30523AA89914A40ABCACD695FA1FB7DCC`

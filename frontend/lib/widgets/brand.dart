@@ -24,6 +24,30 @@ class Brand {
             : const [navyLight, navy, navyDark],
       );
 
+  /// Warna aksen tiap waktu makan (ikon & label).
+  static const mealColors = {
+    'sarapan': Color(0xFFF59E0B), // jingga pagi
+    'siang': Color(0xFFEAB308), // kuning siang
+    'sore': Color(0xFF14B8A6), // toska sore
+    'malam': Color(0xFF6366F1), // indigo malam
+    'camilan': Color(0xFFEC4899), // merah muda camilan
+  };
+
+  /// Palet untuk avatar / ikon yang perlu warna berbeda-beda tapi tetap serasi.
+  static const accents = [
+    Color(0xFF3B82F6),
+    Color(0xFF10B981),
+    Color(0xFFF59E0B),
+    Color(0xFFEC4899),
+    Color(0xFF8B5CF6),
+    Color(0xFF14B8A6),
+    Color(0xFFEF4444),
+    Color(0xFF6366F1),
+  ];
+
+  /// Warna tetap untuk sebuah teks (mis. nama makanan), supaya selalu sama tiap dibuka.
+  static Color accentFor(String text) => accents[text.codeUnits.fold(0, (a, b) => a + b) % accents.length];
+
   /// Bayangan berwarna di bawah kartu bergradasi.
   static List<BoxShadow> glowOf(BuildContext context) => [
         BoxShadow(
@@ -32,6 +56,55 @@ class Brand {
           offset: const Offset(0, 10),
         ),
       ];
+}
+
+/// Ikon dalam kotak membulat berwarna lembut — dipakai di kartu-kartu supaya tidak polos.
+class IconBadge extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final double size;
+  const IconBadge({super.key, required this.icon, required this.color, this.size = 40});
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: dark ? 0.22 : 0.14),
+        borderRadius: BorderRadius.circular(size * 0.32),
+      ),
+      child: Icon(icon, color: color, size: size * 0.55),
+    );
+  }
+}
+
+/// Label kecil membulat (mis. "535 kkal", "Milikmu").
+class Pill extends StatelessWidget {
+  final String text;
+  final Color color;
+  final IconData? icon;
+  const Pill(this.text, {super.key, required this.color, this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: dark ? 0.22 : 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[Icon(icon, size: 14, color: color), const SizedBox(width: 4)],
+          Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12)),
+        ],
+      ),
+    );
+  }
 }
 
 /// Tulisan "BulkIn" dengan "In" berwarna mint.

@@ -4,6 +4,7 @@ import '../api.dart';
 import '../food_store.dart';
 import '../format.dart';
 import '../models.dart';
+import '../widgets/brand.dart';
 import '../widgets/error_view.dart';
 
 class FoodsScreen extends StatefulWidget {
@@ -51,24 +52,145 @@ class _FoodsScreenState extends State<FoodsScreen> {
                   onChanged: (v) => setState(() => _query = v),
                 ),
               ),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 88),
-                  itemCount: foods.length,
-                  itemBuilder: (context, i) {
-                    final food = foods[i];
-                    return ListTile(
-                      title: Text(food.name),
-                      subtitle: Text(food.description),
-                      trailing: food.isBuiltIn ? null : const Icon(Icons.person_outline, size: 18),
-                      onTap: () => _edit(food),
-                    );
-                  },
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    q.isEmpty ? '${foods.length} makanan' : '${foods.length} hasil untuk "$_query"',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
                 ),
+              ),
+              Expanded(
+                child: foods.isEmpty
+                    ? _EmptyFoods(query: _query)
+                    : ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 88),
+                        itemCount: foods.length,
+                        itemBuilder: (context, i) => _FoodTile(food: foods[i], onTap: () => _edit(foods[i])),
+                      ),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// Satu makanan: avatar huruf awal berwarna, nama, keterangan, dan kalori utama.
+class _FoodTile extends StatelessWidget {
+  final Food food;
+  final VoidCallback onTap;
+  const _FoodTile({required this.food, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final color = Brand.accentFor(food.name);
+    final dark = theme.brightness == Brightness.dark;
+    // Angka besar di kanan: per satuan kalau ada (lebih sering dipakai), selain itu per 100 g.
+    final (kcal, unit) = food.hasUnit
+        ? (food.kcalPerUnit!, '/${food.unitName}')
+        : (food.kcalPer100g ?? 0, '/100 g');
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 14, 10),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: dark ? 0.22 : 0.14),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  food.name.isEmpty ? '?' : food.name.characters.first.toUpperCase(),
+                  style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 18),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            food.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        if (!food.isBuiltIn) ...[
+                          const SizedBox(width: 6),
+                          Pill('Milikmu', color: scheme.secondary),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      food.description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(fmtNum(kcal.round()), style: theme.textTheme.titleMedium?.copyWith(color: scheme.primary)),
+                  Text('kkal$unit', style: theme.textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant)),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyFoods extends StatelessWidget {
+  final String query;
+  const _EmptyFoods({required this.query});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconBadge(icon: Icons.search_off, color: theme.colorScheme.primary, size: 64),
+            const SizedBox(height: 16),
+            Text('"$query" belum ada di daftar', style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
+            const SizedBox(height: 4),
+            Text(
+              'Tambah sendiri dengan tombol +, atau pakai "Tanya AI" saat mencatat makanan.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ),
       ),
     );
   }
