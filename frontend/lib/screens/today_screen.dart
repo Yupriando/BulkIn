@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../api.dart';
 import '../format.dart';
+import '../home_widget_service.dart';
 import '../models.dart';
 import '../offline.dart';
 import '../widgets/brand.dart';
@@ -20,20 +21,40 @@ class TodayScreen extends StatefulWidget {
 
 class _TodayScreenState extends State<TodayScreen> {
   DateTime _date = DateUtils.dateOnly(DateTime.now());
-  late Future<DaySummary> _future = Api.instance.getDay(_date);
+  late Future<DaySummary> _future = _load();
 
-  void _reload() => setState(() => _future = Api.instance.getDay(_date));
+  /// Ambil data hari terpilih; kalau itu hari ini, sekalian perbarui widget layar utama.
+  Future<DaySummary> _load() async {
+    final date = _date;
+    final day = await Api.instance.getDay(date);
+    if (DateUtils.isSameDay(date, DateTime.now())) HomeWidgetService.update(day).ignore();
+    return day;
+  }
+
+  void _reload() => setState(() => _future = _load());
 
   @override
   void initState() {
     super.initState();
     SyncStatus.synced.addListener(_reload); // antrean offline terkirim: ambil data terbaru dari server
+    HomeWidgetService.pendingAdd.addListener(_onWidgetAdd);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _onWidgetAdd());
   }
 
   @override
   void dispose() {
     SyncStatus.synced.removeListener(_reload);
+    HomeWidgetService.pendingAdd.removeListener(_onWidgetAdd);
     super.dispose();
+  }
+
+  /// Dibuka dari tombol "+ Catat makan" di widget: catat untuk hari ini.
+  void _onWidgetAdd() {
+    if (!mounted || !HomeWidgetService.pendingAdd.value) return;
+    HomeWidgetService.pendingAdd.value = false;
+    if (!DateUtils.isSameDay(_date, DateTime.now())) _changeDate(DateTime.now());
+    Navigator.of(context).popUntil((r) => r.isFirst); // tutup sheet/dialog yang mungkin masih terbuka
+    _addEntry();
   }
 
   void _changeDate(DateTime d) {

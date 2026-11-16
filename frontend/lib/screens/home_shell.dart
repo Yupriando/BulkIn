@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../api.dart';
 import '../food_store.dart';
+import '../home_widget_service.dart';
 import '../offline.dart';
 import '../widgets/sync_banner.dart';
 import 'foods_screen.dart';
@@ -33,6 +34,14 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     _timer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (SyncStatus.pending.value > 0) Api.instance.sync();
     });
+    // Tombol "+ Catat makan" di widget layar utama → buka tab Harian (form dibuka oleh TodayScreen).
+    HomeWidgetService.pendingAdd.addListener(_onWidgetAdd);
+    HomeWidgetService.startListening();
+    _onWidgetAdd();
+  }
+
+  void _onWidgetAdd() {
+    if (HomeWidgetService.pendingAdd.value && _index != 0) setState(() => _index = 0);
   }
 
   @override
@@ -43,6 +52,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   @override
   void dispose() {
     _timer?.cancel();
+    HomeWidgetService.pendingAdd.removeListener(_onWidgetAdd);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

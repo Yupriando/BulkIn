@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- updatePeriodMillis 30 menit (minimum Android): supaya lewat tengah malam widget berganti ke
+     "Belum ada catatan hari ini" walau aplikasi belum dibuka. Hanya menggambar ulang, tanpa internet. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_description"
+    android:initialLayout="@layout/bulkin_widget"
+    android:minWidth="180dp"
+    android:minHeight="180dp"
+    android:minResizeWidth="180dp"
+    android:minResizeHeight="180dp"
+    android:previewLayout="@layout/bulkin_widget"
+    android:previewImage="@mipmap/ic_launcher"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="3"
+    android:targetCellHeight="3"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

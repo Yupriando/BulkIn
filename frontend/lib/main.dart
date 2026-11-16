@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config.dart';
+import 'home_widget_service.dart';
 import 'screens/home_shell.dart';
 import 'screens/login_screen.dart';
 import 'screens/splash_screen.dart';
@@ -70,7 +71,11 @@ class AuthGate extends StatelessWidget {
     final auth = Supabase.instance.client.auth;
     return StreamBuilder<AuthState>(
       stream: auth.onAuthStateChange,
-      builder: (context, _) => auth.currentSession == null ? const LoginScreen() : const HomeShell(),
+      builder: (context, _) {
+        if (auth.currentSession != null) return const HomeShell();
+        HomeWidgetService.clear().ignore(); // logout (manual / token habis): widget tidak lagi menampilkan data akun
+        return const LoginScreen();
+      },
     );
   }
 }

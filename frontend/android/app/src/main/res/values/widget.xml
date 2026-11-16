@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_text">#FFFFFF</color>
+    <color name="widget_text_soft">#CCFFFFFF</color>
+    <color name="widget_mint">#7BE495</color>
+    <color name="widget_on_mint">#050C1F</color>
+
+    <!-- Nama & keterangan di daftar widget launcher -->
+    <string name="widget_label">BulkIn · Lengkap</string>
+    <string name="widget_description">Ringkasan kalori, protein &amp; berat hari ini, plus tombol cepat catat makan</string>
+    <string name="widget_small_label">BulkIn · Ringkas</string>
+    <string name="widget_small_description">Kalori hari ini &amp; tombol cepat catat makan</string>
+    <string name="widget_wide_label">BulkIn · Baris</string>
+    <string name="widget_wide_description">Satu baris: kalori hari ini &amp; tombol cepat catat makan</string>
+    <string name="widget_mini_label">BulkIn · Mini</string>
+    <string name="widget_mini_description">Kalori hari ini, ketuk untuk buka BulkIn</string>
+</resources>

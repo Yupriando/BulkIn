@@ -3,7 +3,7 @@
 Aplikasi Android untuk mencatat makanan, kalori, dan berat badan harian — dibuat untuk program **bulking** (naik berat badan).
 Kamu cukup pilih makanan dan ketik beratnya (gram) atau jumlahnya (bungkus/porsi), kalori & protein dihitung otomatis.
 
-📱 **Unduh APK:** [apk/BulkIn-v1.0.0.apk](apk/BulkIn-v1.0.0.apk)
+📱 **Unduh APK:** [apk/BulkIn-v1.1.0.apk](apk/BulkIn-v1.1.0.apk)
 
 ```
 apk/       APK siap pasang
@@ -21,6 +21,7 @@ backend/   API Node.js + Express → deploy ke Vercel
 - **Kebutuhan kalori** — dihitung dari data kamu sendiri: rata-rata kalori yang dimakan dikurangi perubahan berat pagi × 7.700 kkal/kg (28 hari terakhir). Ada tombol untuk langsung menjadikannya target (naik 0,25 atau 0,5 kg/minggu).
 - **Bisa offline** — catatan makan, berat badan, dan target tetap bisa dicatat tanpa internet. Disimpan dulu di HP, lalu dikirim otomatis ke database saat online lagi. (Tanya AI dan tambah/edit daftar makanan tetap butuh internet.)
 - **Import catatan lama** — 50 hari catatan manual kamu bisa langsung dimasukkan.
+- **Widget layar utama** — 4 ukuran (3×3, 2×2, 4×1, 2×1): ringkasan kalori hari ini di home HP, plus tombol **+ Catat makan**. Angkanya diperbarui setiap kali aplikasi dibuka atau makanan dicatat.
 
 ---
 
